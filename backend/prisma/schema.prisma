@@ -10,11 +10,13 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
+  name      String?          // <-- FIX: optional name field present
   role      Role
   createdAt DateTime @default(now())
 
   doctor    Doctor?
   patient   Patient?
+  tokens    RefreshToken[]   // optional back-relation
 }
 
 model Doctor {
@@ -47,6 +49,19 @@ model Appointment {
 
   @@index([doctorId])
   @@index([patientId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 enum Role {
