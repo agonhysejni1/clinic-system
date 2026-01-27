@@ -1,21 +1,62 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  
 }
 
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  name      String?
+  password  String
+  role      Role
   createdAt DateTime @default(now())
+
+  doctor    Doctor?
+  patient   Patient?
+}
+
+model Doctor {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  specialty String
+
+  user        User         @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+}
+
+model Patient {
+  id      Int @id @default(autoincrement())
+  userId  Int @unique
+  phone   String?
+
+  user        User         @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  doctorId  Int
+  patientId Int
+  date      DateTime
+  status    AppointmentStatus @default(PENDING)
+
+  doctor   Doctor  @relation(fields: [doctorId], references: [id])
+  patient  Patient @relation(fields: [patientId], references: [id])
+
+  @@index([doctorId])
+  @@index([patientId])
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  PATIENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  APPROVED
+  CANCELED
 }
