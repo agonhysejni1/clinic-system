@@ -1,12 +1,5 @@
-import './App.css'
+import AppRoutes from "./routes/AppRoutes";
 
-function App() {
-
-  return (
-    <>
-    <h1>Clinic system setup</h1>
-    </>
-  )
+export default function App() {
+  return <AppRoutes />;
 }
-
-export default App

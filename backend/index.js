@@ -1,7 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
-
+import cors from "cors"
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import appointmentRoutes from "./routes/appointment.routes.js";
@@ -10,6 +10,10 @@ import patientRoutes from "./routes/patient.routes.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 
 const app = express();
+app.use(cors({
+  origin: true,
+  credentials: true
+}))
 app.use(express.json());
 app.use(cookieParser());
 
