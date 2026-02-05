@@ -5,6 +5,8 @@ import RequireAuth from "../auth/RequireAuth";
 const Login = lazy(() => import("../pages/Login"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Appointments = lazy(() => import("../pages/Appointments"));
+const Doctors = lazy(() => import("../pages/Doctors"));
+const Profile = lazy(() => import("../pages/Profile"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 export default function AppRoutes() {
@@ -17,6 +19,9 @@ export default function AppRoutes() {
           <Route element={<RequireAuth />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/appointments" element={<Appointments />} />
+            <Route path="/doctors" element={<Doctors />} />
+            <Route path="/profile" element={<Profile />} />
+
           </Route>
 
           <Route path="*" element={<NotFound />} />

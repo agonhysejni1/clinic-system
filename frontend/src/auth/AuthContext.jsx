@@ -1,23 +1,53 @@
-// src/auth/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { parseJwt, setAccessToken, getAccessToken, clearAccessToken } from "../utils/token";
+import { setAccessToken, getAccessToken, clearAccessToken } from "../utils/token";
 import { loginApi, refreshApi, logoutApi } from "../api/auth.api";
+import { getMe } from "../api/user.api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [accessToken, setTokenState] = useState(() => getAccessToken());
-  const [user, setUser] = useState(() => {
-    const t = getAccessToken();
-    return t ? parseJwt(t) : null;
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // keep sessionStorage and state in sync
-    if (accessToken) setAccessToken(accessToken);
-    else clearAccessToken();
-  }, [accessToken]);
+    let mounted = true;
+    const loadProfile = async () => {
+      if (!getAccessToken()) return;
+      setLoading(true);
+      try {
+        const profile = await getMe();
+        if (!mounted) return;
+        setUser(profile);
+      } catch (err) {
+
+        try {
+          const refreshed = await refreshApi();
+          const token = refreshed?.accessToken;
+          if (token) {
+            setTokenState(token);
+            setAccessToken(token);
+            const profile2 = await getMe();
+            if (!mounted) return;
+            setUser(profile2);
+          } else {
+            setUser(null);
+            clearAccessToken();
+          }
+        } catch (refreshErr) {
+          setUser(null);
+          clearAccessToken();
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadProfile();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const login = async (email, password) => {
     setLoading(true);
@@ -26,7 +56,9 @@ export function AuthProvider({ children }) {
       if (!token) throw new Error("No access token returned");
       setTokenState(token);
       setAccessToken(token);
-      setUser(parseJwt(token));
+
+      const profile = await getMe();
+      setUser(profile);
       setLoading(false);
       return { ok: true };
     } catch (err) {
@@ -41,13 +73,16 @@ export function AuthProvider({ children }) {
       const { accessToken: token } = await refreshApi();
       if (!token) throw new Error("No token");
       setTokenState(token);
-      setUser(parseJwt(token));
+      setAccessToken(token);
+      const profile = await getMe();
+      setUser(profile);
       setLoading(false);
       return true;
     } catch (err) {
       setLoading(false);
       setTokenState(null);
       setUser(null);
+      clearAccessToken();
       return false;
     }
   };

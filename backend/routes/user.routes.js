@@ -6,13 +6,15 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  getCurrentUser,
 } from "../controllers/user.controller.js";
 
 const router = Router();
 
+router.get("/me", auth, getCurrentUser);
 router.get("/", auth, authorize(["ADMIN"]), getUsers);
-router.get("/:id", auth, getUserById); // controller checks access (admin or self)
-router.patch("/:id", auth, updateUser); // controller checks access
+router.get("/:id", auth, getUserById);
+router.patch("/:id", auth, updateUser);
 router.delete("/:id", auth, authorize(["ADMIN"]), deleteUser);
 
 export default router;

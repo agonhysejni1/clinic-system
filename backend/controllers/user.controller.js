@@ -29,6 +29,31 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const requestor = req.user;
+    if (!requestor?.id)
+      return res.status(401).json({ message: "Not authenticated" });
+
+    const user = await prisma.user.findUnique({
+      where: { id: Number(requestor.id) },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json(user);
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**
  * GET /api/users/:id
  * Admin or the user themself
